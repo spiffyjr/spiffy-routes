@@ -1,6 +1,6 @@
 {
     "name": "spiffy/spiffy-routes",
-    "description": "ZF2 user module that provides route annotations directly in controllers.",
+    "description": "ZF2 module that provides route annotations directly in controllers.",
     "homepage": "http://www.github.com/spiffyjr/spiffy-routes.git",
     "require": {
         "php": ">=5.3.3",
