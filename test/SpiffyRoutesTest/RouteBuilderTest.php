@@ -37,10 +37,20 @@ class RouteBuilderTest extends TestCase
         $this->assertTrue(is_array($builder->getRouterConfig()));
     }
 
+    public function testNameCreatedFromControllerAndActionIfNotSpecified()
+    {
+        $loader  = $this->getLoader();
+        $builder = new RouteBuilder($loader);
+
+        $config = $builder->getRouterConfig();
+        $this->assertExpectedConfig($config);
+        $this->assertCount(1, $config);
+        $this->assertArrayHasKey('invokable_controller_test_literal', $config);
+    }
+
     public function testRouterConfigFromInvokables()
     {
         $loader  = $this->getLoader();
-        $loader->setInvokableClass('Invokable\Controller\Test', 'SpiffyRoutesTest\Assets\TestController');
         $builder = new RouteBuilder($loader);
 
         $config = $builder->getRouterConfig();
@@ -58,7 +68,7 @@ class RouteBuilderTest extends TestCase
 
         $config = $builder->getRouterConfig();
         $this->assertExpectedConfig($config);
-        $this->assertCount(1, $config);
+        $this->assertCount(2, $config);
     }
 
     public function testRoutesWithRootFromController()
@@ -70,7 +80,7 @@ class RouteBuilderTest extends TestCase
         $config = $builder->getRouterConfig();
         $this->assertExpectedConfig($config);
         $this->assertEquals('/root/index', $config['home']['options']['route']);
-        $this->assertCount(1, $config);
+        $this->assertCount(2, $config);
     }
 
     /**
@@ -94,6 +104,7 @@ class RouteBuilderTest extends TestCase
     protected function getLoader()
     {
         $loader = new ControllerManager();
+        $loader->setInvokableClass('Invokable\Controller\Test', 'SpiffyRoutesTest\Assets\TestController');
         $loader->setServiceLocator($this->getServiceManager());
         $loader->setRetrieveFromPeeringManagerFirst(false);
 
