@@ -7,6 +7,7 @@ CLI tool to warm/clear the cache as required.
 ## Project Status
 
 [![Master Branch Build Status](https://secure.travis-ci.org/spiffyjr/spiffy-routes.png?branch=master)](http://travis-ci.org/spiffyjr/spiffy-routes)
+[![Coverage Status](https://coveralls.io/repos/spiffyjr/spiffy-routes/badge.png?branch=master)](https://coveralls.io/r/spiffyjr/spiffy-routes?branch=master)
 
 ## Installation
 
