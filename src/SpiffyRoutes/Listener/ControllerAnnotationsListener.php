@@ -3,29 +3,13 @@
 namespace SpiffyRoutes\Listener;
 
 use SpiffyRoutes\Annotation\Root;
+use Zend\EventManager\AbstractListenerAggregate;
 use Zend\EventManager\EventInterface;
 use Zend\EventManager\EventManagerInterface;
 use Zend\EventManager\ListenerAggregateInterface;
 
-class ControllerAnnotationsListener implements ListenerAggregateInterface
+class ControllerAnnotationsListener extends AbstractListenerAggregate
 {
-    /**
-     * @var \Zend\Stdlib\CallbackHandler[]
-     */
-    protected $listeners = array();
-
-    /**
-     * {@inheritDoc}
-     */
-    public function detach(EventManagerInterface $events)
-    {
-        foreach ($this->listeners as $index => $callback) {
-            if ($events->detach($callback)) {
-                unset($this->listeners[$index]);
-            }
-        }
-    }
-
     /**
      * {@inheritDoc}
      */
