@@ -6,5 +6,6 @@ use Doctrine\Common\Annotations\Annotation;
 
 abstract class AbstractType extends Annotation
 {
+    public $name;
     public $type;
 }

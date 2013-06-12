@@ -2,6 +2,7 @@
 
 namespace SpiffyRoutes\Listener;
 
+use ArrayObject;
 use SpiffyRoutes\Annotation\AbstractType;
 use Zend\EventManager\EventInterface;
 use Zend\EventManager\EventManagerInterface;
@@ -13,6 +14,11 @@ class ActionAnnotationsListener implements ListenerAggregateInterface
      * @var \Zend\Stdlib\CallbackHandler[]
      */
     protected $listeners = array();
+
+    /**
+     * @var array
+     */
+    protected $canonicalNamesReplacements = array('-' => '_', ' ' => '_', '\\' => '_', '/' => '_');
 
     /**
      * {@inheritDoc}
@@ -34,19 +40,48 @@ class ActionAnnotationsListener implements ListenerAggregateInterface
         $this->listeners[] = $events->attach('configureAction', array($this, 'configureDefaults'));
         $this->listeners[] = $events->attach('configureAction', array($this, 'configureRoute'));
         $this->listeners[] = $events->attach('configureAction', array($this, 'configureType'));
+        $this->listeners[] = $events->attach('discoverName', array($this, 'discoverName'));
     }
 
-    public function configureDefaults(EventInterface $event)
+    /**
+     * @param EventInterface $event
+     * @return string
+     */
+    public function discoverName(EventInterface $event)
     {
-        $name    = $event->getParam('name');
-        $matches = array();
+        $annotations = $event->getParam('annotations');
 
-        if (!preg_match('/^(.*)Action$/', $name, $matches)) {
-            return;
+        foreach ($annotations as $annotation) {
+            if ($annotation instanceof AbstractType && $annotation->name) {
+                return $annotation->name;
+            }
         }
 
-        $routeSpec                                  = $event->getParam('routeSpec');
-        $routeSpec['options']['defaults']['action'] = $matches[1];
+        $controllerSpec = $event->getParam('controllerSpec');
+        $actionSpec     = $event->getParam('actionSpec');
+
+        $parts = array(
+            $this->canonicalize($controllerSpec['name']),
+            $this->canonicalize($actionSpec['name'])
+        );
+
+        return implode('_', $parts);
+    }
+
+    /**
+     * @param EventInterface $event
+     */
+    public function configureDefaults(EventInterface $event)
+    {
+        $actionSpec     = $event->getParam('actionSpec');
+        $controllerSpec = $event->getParam('controllerSpec');
+
+        $defaults = array(
+            'controller' => $controllerSpec['name'],
+            'action'     => $actionSpec['name']
+        );
+
+        $actionSpec['options']['defaults'] = $defaults;
     }
 
     /**
@@ -59,8 +94,13 @@ class ActionAnnotationsListener implements ListenerAggregateInterface
             return;
         }
 
-        $routeSpec                     = $event->getParam('routeSpec');
-        $routeSpec['options']['route'] = $annotation->value;
+        $controllerSpec = $event->getParam('controllerSpec');
+        $actionSpec     = $event->getParam('actionSpec');
+
+        $route = isset($controllerSpec['root']) ? $controllerSpec['root'] : '';
+        $route.= $annotation->value;
+
+        $actionSpec['options']['route'] = $route;
     }
 
     /**
@@ -73,7 +113,12 @@ class ActionAnnotationsListener implements ListenerAggregateInterface
             return;
         }
 
-        $routeSpec         = $event->getParam('routeSpec');
-        $routeSpec['type'] = $annotation->type;
+        $actionSpec         = $event->getParam('actionSpec');
+        $actionSpec['type'] = $annotation->type;
+    }
+
+    protected function canonicalize($name)
+    {
+        return strtolower(strtr($name, $this->canonicalNamesReplacements));
     }
 }

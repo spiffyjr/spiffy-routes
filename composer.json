@@ -7,7 +7,9 @@
         "zendframework/zend-code": "2.*",
         "zendframework/zend-mvc": "2.*"
     },
-    "require-dev": {},
+    "require-dev": {
+        "phpunit/phpunit": "3.*"
+    },
     "autoload": {
         "psr-0": {
             "SpiffyRoutes": "src/",

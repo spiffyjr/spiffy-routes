@@ -2,6 +2,7 @@
 
 namespace SpiffyRoutes\Listener;
 
+use SpiffyRoutes\Annotation\Root;
 use Zend\EventManager\EventInterface;
 use Zend\EventManager\EventManagerInterface;
 use Zend\EventManager\ListenerAggregateInterface;
@@ -30,12 +31,20 @@ class ControllerAnnotationsListener implements ListenerAggregateInterface
      */
     public function attach(EventManagerInterface $events)
     {
-        $this->listeners[] = $events->attach('configureController', array($this, 'configureDefaults'));
+        $this->listeners[] = $events->attach('configureController', array($this, 'configureRoot'));
     }
 
-    public function configureDefaults(EventInterface $event)
+    /**
+     * @param EventInterface $event
+     */
+    public function configureRoot(EventInterface $event)
     {
-        $routeSpec                                      = $event->getParam('routeSpec');
-        $routeSpec['options']['defaults']['controller'] = $event->getParam('name');
+        $annotation = $event->getParam('annotation');
+        if (!$annotation instanceof Root) {
+            return;
+        }
+
+        $controllerSpec         = $event->getParam('controllerSpec');
+        $controllerSpec['root'] = $annotation->value;
     }
 }

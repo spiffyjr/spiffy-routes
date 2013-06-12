@@ -6,6 +6,8 @@ use ArrayObject;
 use ReflectionClass;
 use SpiffyRoutes\Listener\ActionAnnotationsListener;
 use SpiffyRoutes\Listener\ControllerAnnotationsListener;
+use Zend\Cache\Storage\Adapter\Memory;
+use Zend\Cache\Storage\StorageInterface;
 use Zend\Code\Annotation\AnnotationCollection;
 use Zend\Code\Annotation\AnnotationManager;
 use Zend\Code\Annotation\Parser;
@@ -21,6 +23,11 @@ class RouteBuilder
      * @var AnnotationManager
      */
     protected $annotationManager;
+
+    /**
+     * @var StorageInterface
+     */
+    protected $cacheAdapter;
 
     /**
      * @var array
@@ -120,6 +127,27 @@ class RouteBuilder
     }
 
     /**
+     * @param \Zend\Cache\Storage\StorageInterface $cacheAdapter
+     * @return RouteBuilder
+     */
+    public function setCacheAdapter($cacheAdapter)
+    {
+        $this->cacheAdapter = $cacheAdapter;
+        return $this;
+    }
+
+    /**
+     * @return \Zend\Cache\Storage\StorageInterface
+     */
+    public function getCacheAdapter()
+    {
+        if (!$this->cacheAdapter) {
+            $this->cacheAdapter = new Memory();
+        }
+        return $this->cacheAdapter;
+    }
+
+    /**
      * Builds the router config from controller/action annotations.
      */
     public function getRouterConfig()
@@ -129,53 +157,100 @@ class RouteBuilder
         $routerConfig      = array();
 
         foreach ($controllers as $controllerName => $controller) {
-            $routeSpec   = new ArrayObject();
             $reflection  = new ClassReflection($controller);
             $annotations = $reflection->getAnnotations($annotationManager);
 
+            $controllerSpec         = new ArrayObject();
+            $controllerSpec['name'] = $controllerName;
+
             if ($annotations instanceof AnnotationCollection) {
-                $this->configureController($controllerName, $annotations, $routeSpec);
+                $this->configureController($annotations, $controllerSpec);
             }
 
             foreach ($reflection->getMethods() as $method) {
+                $name = $this->getActionName($method->getName());
+                if (!$name) {
+                    continue;
+                }
+
+                $actionSpec         = new ArrayObject();
+                $actionSpec['name'] = $name;
+
                 $annotations = $method->getAnnotations($annotationManager);
 
                 if ($annotations instanceof AnnotationCollection) {
-                    $this->configureAction($annotations, $method, $routeSpec);
+                    $this->configureAction($annotations, $controllerSpec, $actionSpec);
                 }
-            }
 
-            if (0 !== count($routeSpec)) {
-                $routerConfig[] = $routeSpec;
+                if (isset($actionSpec['type'])) {
+                    $name = $this->discoverName($annotations, $controllerSpec, $actionSpec);
+                    if ($name) {
+                        $routerConfig[$name] = $actionSpec->getArrayCopy();
+                    }
+                }
             }
         }
         return $routerConfig;
     }
 
     /**
-     * @param $controllerName
-     * @param $annotations
-     * @param $routeSpec
+     * @param string $input
+     * @return string|null
      */
-    protected function configureController($controllerName, $annotations, $routeSpec)
+    protected function getActionName($input)
+    {
+        if (preg_match('/^(.*)Action$/', $input, $matches)) {
+            return $matches[1];
+        }
+        return null;
+    }
+
+    /**
+     * @param AnnotationCollection $annotations
+     * @param ArrayObject $controllerSpec
+     * @param ArrayObject $actionSpec
+     * @return mixed|null
+     */
+    protected function discoverName(
+        AnnotationCollection $annotations,
+        ArrayObject $controllerSpec,
+        ArrayObject $actionSpec
+    ) {
+        $results = $this->getEventManager()->trigger(__FUNCTION__, $this, array(
+            'annotations'    => $annotations,
+            'controllerSpec' => $controllerSpec,
+            'actionSpec'     => $actionSpec
+        ), function ($r) {
+            return (true === $r);
+        });
+        return is_string($results->last()) ? $results->last() : null;
+    }
+
+    /**
+     * @param AnnotationCollection $annotations
+     * @param ArrayObject $controllerSpec
+     */
+    protected function configureController(AnnotationCollection $annotations, ArrayObject $controllerSpec)
     {
         $eventManager = $this->getEventManager();
         foreach ($annotations as $annotation) {
             $eventManager->trigger(__FUNCTION__, $this, array(
-                'annotation' => $annotation,
-                'name'       => $controllerName,
-                'routeSpec'  => $routeSpec
+                'annotation'     => $annotation,
+                'controllerSpec' => $controllerSpec
             ));
         }
     }
 
     /**
-     * @param $annotations
-     * @param MethodReflection $method
-     * @param $routeSpec
+     * @param AnnotationCollection $annotations
+     * @param ArrayObject $controllerSpec
+     * @param ArrayObject $actionSpec
      */
-    protected function configureAction($annotations, MethodReflection $method, $routeSpec)
-    {
+    protected function configureAction(
+        AnnotationCollection $annotations,
+        ArrayObject $controllerSpec,
+        ArrayObject $actionSpec
+    ) {
         if ($this->checkForExclude($annotations)) {
             return;
         }
@@ -183,18 +258,18 @@ class RouteBuilder
         $eventManager = $this->getEventManager();
         foreach ($annotations as $annotation) {
             $eventManager->trigger(__FUNCTION__, $this, array(
-                'annotation'       => $annotation,
-                'name'             => $method->getName(),
-                'routeSpec'        => $routeSpec
+                'annotation'     => $annotation,
+                'controllerSpec' => $controllerSpec,
+                'actionSpec'     => $actionSpec
             ));
         }
     }
 
     /**
-     * @param $annotations
+     * @param AnnotationCollection $annotations
      * @return bool
      */
-    protected function checkForExclude($annotations)
+    protected function checkForExclude(AnnotationCollection $annotations)
     {
         $results = $this->getEventManager()->trigger(__FUNCTION__, $this, array(
             'annotations' => $annotations,
@@ -217,21 +292,13 @@ class RouteBuilder
             return $this->controllers;
         }
 
-        $manager    = $this->controllerManager;
-        $services   = $manager->getRegisteredServices();
-        $canonical  = $manager->getCanonicalNames();
-        $reflection = new ReflectionClass($manager);
-        $property   = $reflection->getProperty('invokableClasses');
-        $property->setAccessible(true);
+        $manager        = $this->controllerManager;
+        $canonicalNames = $manager->getCanonicalNames();
+        $controllers    = array();
 
-        $controllers = array();
-        foreach ($property->getValue($manager) as $name => $controller) {
-            $controllers[array_search($name, $canonical)] = $controller;
-        }
-
-        foreach ($services['factories'] as $factory) {
+        foreach ($canonicalNames as $name => $canonical) {
             try {
-                $controllers[array_search($factory, $canonical)] = $manager->get($factory);
+                $controllers[$name] = $manager->get($canonical);
             } catch (\Exception $e) {
                 continue;
             }

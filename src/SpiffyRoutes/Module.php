@@ -2,24 +2,19 @@
 
 namespace SpiffyRoutes;
 
-use Zend\EventManager\EventInterface;
-use Zend\ModuleManager\Feature\BootstrapListenerInterface;
+use Zend\ModuleManager\Feature\ConfigProviderInterface;
 use Zend\ModuleManager\Feature\ServiceProviderInterface;
 
 class Module implements
-    BootstrapListenerInterface,
+    ConfigProviderInterface,
     ServiceProviderInterface
 {
     /**
      * {@inheritDoc}
      */
-    public function onBootstrap(EventInterface $e)
+    public function getConfig()
     {
-        /** @var \Zend\Mvc\MvcEvent $e */
-        $app = $e->getApplication();
-        $sm  = $app->getServiceManager();
-
-        $sm->get('Router')->addRoutes($sm->get('SpiffyRoutes\RouteBuilder')->getRouterConfig());
+        return include __DIR__ . '/../../config/module.config.php';
     }
 
     /**
