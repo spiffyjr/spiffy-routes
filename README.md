@@ -69,6 +69,15 @@ class MyController
 }
 ```
 
+## Caching
+
+Caching is extremely important due to the amount of reflection required to parse the annotations. It's so important,
+in fact, that caching is *not* optional. You can, however, set the cache adapter to `Zend\Cache\Storage\Adapter\Memory`
+during development if you wish to rebuild the router configuration on every request.
+
+By default, caching is enabled using the `SpiffyRoutes\Cache` service which is a `Zend\Cache\Storage\AdapterFilesystem`
+with the cache path set to `data/spiffy-routes`.
+
 ## Automatic Route Names
 
 It's recommended that you specify a name for all routes e.g., `@Route\Literal("/", name="home")`. Failure to do so will
