@@ -3,22 +3,22 @@
 namespace SpiffyRoutes;
 
 use ArrayObject;
-use ReflectionClass;
 use SpiffyRoutes\Listener\ActionAnnotationsListener;
 use SpiffyRoutes\Listener\ControllerAnnotationsListener;
-use Zend\Cache\Storage\Adapter\Memory;
+use Zend\Cache\Storage\Adapter\Memory as MemoryCache;
 use Zend\Cache\Storage\StorageInterface;
 use Zend\Code\Annotation\AnnotationCollection;
 use Zend\Code\Annotation\AnnotationManager;
 use Zend\Code\Annotation\Parser;
 use Zend\Code\Reflection\ClassReflection;
-use Zend\Code\Reflection\MethodReflection;
 use Zend\EventManager\EventManager;
 use Zend\EventManager\EventManagerInterface;
 use Zend\Mvc\Controller\ControllerManager;
 
 class RouteBuilder
 {
+    const CACHE_KEY = 'spiffy-routes';
+
     /**
      * @var AnnotationManager
      */
@@ -51,6 +51,11 @@ class RouteBuilder
      * @var EventManagerInterface
      */
     protected $eventManager;
+
+    /**
+     * @var array
+     */
+    protected $routerConfig = array();
 
     /**
      * @param ControllerManager $controllerManager
@@ -130,7 +135,7 @@ class RouteBuilder
      * @param \Zend\Cache\Storage\StorageInterface $cacheAdapter
      * @return RouteBuilder
      */
-    public function setCacheAdapter($cacheAdapter)
+    public function setCacheAdapter(StorageInterface $cacheAdapter)
     {
         $this->cacheAdapter = $cacheAdapter;
         return $this;
@@ -142,7 +147,7 @@ class RouteBuilder
     public function getCacheAdapter()
     {
         if (!$this->cacheAdapter) {
-            $this->cacheAdapter = new Memory();
+            $this->cacheAdapter = new MemoryCache();
         }
         return $this->cacheAdapter;
     }
@@ -152,6 +157,18 @@ class RouteBuilder
      */
     public function getRouterConfig()
     {
+        if ($this->routerConfig) {
+            return $this->routerConfig;
+        }
+
+        $cache  = $this->getCacheAdapter();
+        $config = $cache->getItem(static::CACHE_KEY);
+
+        if ($config) {
+            $this->routerConfig = unserialize($config);
+            return $this->routerConfig;
+        }
+
         $annotationManager = $this->getAnnotationManager();
         $controllers       = $this->generateControllerList();
         $routerConfig      = array();
@@ -190,7 +207,18 @@ class RouteBuilder
                 }
             }
         }
-        return $routerConfig;
+        $cache->setItem(static::CACHE_KEY, serialize($routerConfig));
+        $this->routerConfig = $routerConfig;
+        return $this->routerConfig;
+    }
+
+    /**
+     * Reset to clean state.
+     */
+    public function reset()
+    {
+        $this->cacheAdapter = null;
+        $this->routerConfig = null;
     }
 
     /**

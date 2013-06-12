@@ -9,7 +9,7 @@ class ModuleOptions extends AbstractOptions
     /**
      * @var string
      */
-    protected $cacheAdapter = 'Zend\Cache\Storage\Adapter\Memory';
+    protected $cacheAdapter = 'SpiffyRoutes\Cache';
 
     /**
      * @param string $cacheAdapter

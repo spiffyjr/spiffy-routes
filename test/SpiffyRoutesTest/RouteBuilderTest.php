@@ -8,21 +8,32 @@ use Zend\Mvc\Controller\ControllerManager;
 
 class RouteBuilderTest extends TestCase
 {
-    /**
-     * @var \SpiffyRoutes\RouteBuilder
-     */
-    protected $builder;
-
-    public function setUp()
+    public function testCache()
     {
-        $this->builder = $this->getServiceManager()->get('SpiffyRoutes\RouteBuilder');
+        $builder = new RouteBuilder($this->getLoader());
+
+        /** @var \Zend\Cache\Storage\Adapter\Memory $cache */
+        $cache = $builder->getCacheAdapter();
+
+        $this->assertNull($cache->getItem(RouteBuilder::CACHE_KEY));
+        $builder->getRouterConfig();
+        $this->assertNotNull($cache->getItem(RouteBuilder::CACHE_KEY));
+
+        $cache->flush();
+        $this->assertNull($cache->getItem(RouteBuilder::CACHE_KEY));
+        $cache->setItem(RouteBuilder::CACHE_KEY, serialize(array('foo' => 'bar')));
+
+        $builder = new RouteBuilder($this->getLoader());
+        $builder->setCacheAdapter($cache);
+        $this->assertEquals(array('foo' => 'bar'), $builder->getRouterConfig());
     }
 
     public function testAnnotationsLazyLoaded()
     {
+        $builder = new RouteBuilder($this->getLoader());
         $this->assertInstanceOf(
             'Zend\Code\Annotation\AnnotationManager',
-            $this->builder->getAnnotationManager()
+            $builder->getAnnotationManager()
         );
     }
 
