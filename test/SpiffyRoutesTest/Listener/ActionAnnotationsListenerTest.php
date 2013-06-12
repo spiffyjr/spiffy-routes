@@ -22,6 +22,7 @@ class ActionAnnotationsListnerTest extends \PHPUnit_Framework_TestCase
     public function providerEarlyReturns()
     {
         return array(
+            array('handleExtras'),
             array('handleRoute'),
             array('handleType'),
         );

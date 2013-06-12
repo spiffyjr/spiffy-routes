@@ -7,5 +7,8 @@ namespace SpiffyRoutes\Annotation;
  */
 class Literal extends AbstractType
 {
+    /**
+     * @var string
+     */
     public $type = 'literal';
 }

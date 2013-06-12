@@ -74,6 +74,50 @@ class MyController
 }
 ```
 
+### Regex
+
+The literal annotation maps to the literal route type.
+
+
+```php
+<?php
+
+use SpiffyRoutes\Annotation as Route;
+
+class MyController
+{
+    /**
+     * @Route\Regex("/regex/(?<id>\d+)", spec="/regex/%id%")
+     */
+    public function indexAction()
+    {
+        // ... I resolve to "/regex/<someid>"
+    }
+}
+```
+
+### Segment
+
+The literal annotation maps to the literal route type.
+
+
+```php
+<?php
+
+use SpiffyRoutes\Annotation as Route;
+
+class MyController
+{
+    /**
+     * @Route\Segment("/segment[/:id]", constraints={"id"="\d+"})
+     */
+    public function indexAction()
+    {
+        // ... I resolve to "/segment/<someid>", or /segment
+    }
+}
+```
+
 ## Caching
 
 Caching is extremely important due to the amount of reflection required to parse the annotations. It's so important,
@@ -82,6 +126,28 @@ during development if you wish to rebuild the router configuration on every requ
 
 By default, caching is enabled using the `SpiffyRoutes\Cache` service which is a `Zend\Cache\Storage\AdapterFilesystem`
 with the cache path set to `data/spiffy-routes`.
+
+## Multiple Routes
+
+SpiffyRoutes supports multiple routes per index. To use them, simply add more annotations to your actions.
+
+```php
+<?php
+
+use SpiffyRoutes\Annotation as Route;
+
+class MyController
+{
+    /**
+     * @Route\Regex("/regex/(?<id>\d+)", spec="/regex/%id%")
+     * @Route\Segment("/segment[/:id]", constraints={"id"="\d+"})
+     */
+    public function indexAction()
+    {
+        // ... I resolve to "/segment/<someid>", or /segment, or /regex/<someid>
+    }
+}
+```
 
 ## CLI Tool
 

@@ -21,6 +21,7 @@ class ActionAnnotationsListener extends AbstractListenerAggregate
     public function attach(EventManagerInterface $events)
     {
         $this->listeners[] = $events->attach('configureAction', array($this, 'handleDefaults'));
+        $this->listeners[] = $events->attach('configureAction', array($this, 'handleExtras'));
         $this->listeners[] = $events->attach('configureAction', array($this, 'handleRoute'));
         $this->listeners[] = $events->attach('configureAction', array($this, 'handleType'));
         $this->listeners[] = $events->attach('discoverName', array($this, 'discoverName'));
@@ -32,12 +33,9 @@ class ActionAnnotationsListener extends AbstractListenerAggregate
      */
     public function discoverName(EventInterface $event)
     {
-        $annotations = $event->getParam('annotations');
-
-        foreach ($annotations as $annotation) {
-            if ($annotation instanceof AbstractType && $annotation->name) {
-                return $annotation->name;
-            }
+        $annotation = $event->getParam('annotation');
+        if ($annotation instanceof AbstractType && $annotation->name) {
+            return $annotation->name;
         }
 
         $controllerSpec = $event->getParam('controllerSpec');
@@ -70,6 +68,26 @@ class ActionAnnotationsListener extends AbstractListenerAggregate
     /**
      * @param EventInterface $event
      */
+    public function handleExtras(EventInterface $event)
+    {
+        $annotation = $event->getParam('annotation');
+        if (!$annotation instanceof AbstractType) {
+            return;
+        }
+
+        $skip       = array('name', 'routeKey', $annotation->routeKey, 'type', 'value');
+        $actionSpec = $event->getParam('actionSpec');
+        foreach ($annotation as $key => $value) {
+            if (in_array($key, $skip)) {
+                continue;
+            }
+            $actionSpec['options'][$key] = $value;
+        }
+    }
+
+    /**
+     * @param EventInterface $event
+     */
     public function handleRoute(EventInterface $event)
     {
         $annotation = $event->getParam('annotation');
@@ -83,7 +101,7 @@ class ActionAnnotationsListener extends AbstractListenerAggregate
         $route = isset($controllerSpec['root']) ? $controllerSpec['root'] : '';
         $route.= $annotation->value;
 
-        $actionSpec['options']['route'] = $route;
+        $actionSpec['options'][$annotation->routeKey] = $route;
     }
 
     /**
