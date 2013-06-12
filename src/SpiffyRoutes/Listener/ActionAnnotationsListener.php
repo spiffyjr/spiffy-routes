@@ -20,9 +20,9 @@ class ActionAnnotationsListener extends AbstractListenerAggregate
      */
     public function attach(EventManagerInterface $events)
     {
-        $this->listeners[] = $events->attach('configureAction', array($this, 'configureDefaults'));
-        $this->listeners[] = $events->attach('configureAction', array($this, 'configureRoute'));
-        $this->listeners[] = $events->attach('configureAction', array($this, 'configureType'));
+        $this->listeners[] = $events->attach('configureAction', array($this, 'handleDefaults'));
+        $this->listeners[] = $events->attach('configureAction', array($this, 'handleRoute'));
+        $this->listeners[] = $events->attach('configureAction', array($this, 'handleType'));
         $this->listeners[] = $events->attach('discoverName', array($this, 'discoverName'));
     }
 
@@ -54,7 +54,7 @@ class ActionAnnotationsListener extends AbstractListenerAggregate
     /**
      * @param EventInterface $event
      */
-    public function configureDefaults(EventInterface $event)
+    public function handleDefaults(EventInterface $event)
     {
         $actionSpec     = $event->getParam('actionSpec');
         $controllerSpec = $event->getParam('controllerSpec');
@@ -70,7 +70,7 @@ class ActionAnnotationsListener extends AbstractListenerAggregate
     /**
      * @param EventInterface $event
      */
-    public function configureRoute(EventInterface $event)
+    public function handleRoute(EventInterface $event)
     {
         $annotation = $event->getParam('annotation');
         if (!$annotation instanceof AbstractType) {
@@ -89,7 +89,7 @@ class ActionAnnotationsListener extends AbstractListenerAggregate
     /**
      * @param EventInterface $event
      */
-    public function configureType(EventInterface $event)
+    public function handleType(EventInterface $event)
     {
         $annotation = $event->getParam('annotation');
         if (!$annotation instanceof AbstractType) {
