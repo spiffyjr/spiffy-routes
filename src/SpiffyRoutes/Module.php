@@ -2,16 +2,22 @@
 
 namespace SpiffyRoutes;
 
+use Zend\Console\Adapter\AdapterInterface;
+use Zend\Console\ColorInterface;
 use Zend\EventManager\EventInterface;
 use Zend\ModuleManager\Feature\AutoloaderProviderInterface;
 use Zend\ModuleManager\Feature\BootstrapListenerInterface;
 use Zend\ModuleManager\Feature\ConfigProviderInterface;
+use Zend\ModuleManager\Feature\ConsoleUsageProviderInterface;
+use Zend\ModuleManager\Feature\ControllerProviderInterface;
 use Zend\ModuleManager\Feature\ServiceProviderInterface;
 
 class Module implements
     AutoloaderProviderInterface,
     BootstrapListenerInterface,
     ConfigProviderInterface,
+    ConsoleUsageProviderInterface,
+    ControllerProviderInterface,
     ServiceProviderInterface
 {
     /**
@@ -41,6 +47,14 @@ class Module implements
     /**
      * {@inheritDoc}
      */
+    public function getControllerConfig()
+    {
+        return include __DIR__ . '/../../config/controller.config.php';
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function getServiceConfig()
     {
         return include __DIR__ . '/../../config/service.config.php';
@@ -57,6 +71,21 @@ class Module implements
                     __NAMESPACE__ => __DIR__,
                 ),
             ),
+        );
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getConsoleUsage(AdapterInterface $console)
+    {
+        return array(
+            $console->colorize('Usage:', ColorInterface::YELLOW),
+            '  [options] command [arguments]',
+            '',
+            $console->colorize('Available Commands:', ColorInterface::YELLOW),
+            array($console->colorize('  routes build', ColorInterface::GREEN), 'build, or rebuild if present, the cache'),
+            array($console->colorize('  routes clear', ColorInterface::GREEN), 'clear the cache'),
         );
     }
 }

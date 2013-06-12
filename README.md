@@ -78,6 +78,11 @@ during development if you wish to rebuild the router configuration on every requ
 By default, caching is enabled using the `SpiffyRoutes\Cache` service which is a `Zend\Cache\Storage\AdapterFilesystem`
 with the cache path set to `data/spiffy-routes`.
 
+## CLI Tool
+
+A CLI tool is provided to build and clear the cache. Run your `public/index.php` from a console to see the relevent
+information.
+
 ## Automatic Route Names
 
 It's recommended that you specify a name for all routes e.g., `@Route\Literal("/", name="home")`. Failure to do so will

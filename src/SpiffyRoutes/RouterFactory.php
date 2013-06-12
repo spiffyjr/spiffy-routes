@@ -2,6 +2,7 @@
 
 namespace SpiffyRoutes;
 
+use Zend\Console\Request as ConsoleRequest;
 use Zend\ServiceManager\FactoryInterface;
 use Zend\ServiceManager\ServiceLocatorInterface;
 
@@ -12,12 +13,17 @@ class RouterFactory implements FactoryInterface
      *
      * @param ServiceLocatorInterface $serviceLocator
      * @throws Exception\RuntimeException
-     * @return RouteBuilder
+     * @return \Zend\Mvc\Router\RouteStackInterface
      */
     public function createService(ServiceLocatorInterface $serviceLocator)
     {
         /** @var \Zend\Mvc\Router\RouteStackInterface $router */
-        $router = $serviceLocator->get('Router');
+        $router  = $serviceLocator->get('Router');
+        $request = $serviceLocator->get('Request');
+
+        if ($request instanceof ConsoleRequest) {
+            return $router;
+        }
 
         /** @var \SpiffyRoutes\RouteBuilder $builder */
         $builder = $serviceLocator->get('SpiffyRoutes\RouteBuilder');
