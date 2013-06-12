@@ -4,6 +4,10 @@ SpiffyRoutes is a module intended to make setting up routes quicker by providing
 used directly on the controllers/actions themselves. SpiffyRoutes comes feature complete with caching and a
 CLI tool to warm/clear the cache as required.
 
+## Project Status
+
+[![Master Branch Build Status](https://secure.travis-ci.org/spiffyjr/spiffy-routes.png?branch=master)](http://travis-ci.org/spiffyjr/spiffy-routes)
+
 ## Installation
 
 Installation of SpiffyRoutes uses composer. For composer documentation, please refer to

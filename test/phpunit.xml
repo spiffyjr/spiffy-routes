@@ -2,4 +2,12 @@
     <testsuite name="SpiffyRoutes Module Tests">
         <directory>./SpiffyRoutesTest</directory>
     </testsuite>
+    <filter>
+        <whitelist>
+            <directory suffix=".php">../src/</directory>
+        </whitelist>
+    </filter>
+    <logging>
+        <log type="coverage-clover" target="../build/logs/clover.xml"/>
+    </logging>
 </phpunit>

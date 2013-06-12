@@ -7,8 +7,10 @@ php:
 before_install:
  - curl -s https://getcomposer.org/installer | php
  - php composer.phar install --prefer-source --dev --no-interaction
- - cd test
+ - mkdir -p builds/logs
 
 script:
- - ../vendor/bin/phpunit
+ - php vendor/bin/phpunit --bootstrap test/Bootstrap.php
 
+after_script:
+ - php vendor/bin/coveralls
