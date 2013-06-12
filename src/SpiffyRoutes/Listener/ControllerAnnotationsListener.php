@@ -31,13 +31,13 @@ class ControllerAnnotationsListener implements ListenerAggregateInterface
      */
     public function attach(EventManagerInterface $events)
     {
-        $this->listeners[] = $events->attach('configureController', array($this, 'configureRoot'));
+        $this->listeners[] = $events->attach('configureController', array($this, 'handleRoot'));
     }
 
     /**
      * @param EventInterface $event
      */
-    public function configureRoot(EventInterface $event)
+    public function handleRoot(EventInterface $event)
     {
         $annotation = $event->getParam('annotation');
         if (!$annotation instanceof Root) {
