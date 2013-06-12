@@ -6,7 +6,7 @@ return array(
             'routes' => array(
                 'spiffy_routes_build' => array(
                     'options' => array(
-                        'route'    => 'routes build',
+                        'route'    => 'spiffyroutes build',
                         'defaults' => array(
                             'controller' => 'SpiffyRoutes\Controller\CliController',
                             'action'     => 'build'
@@ -15,7 +15,7 @@ return array(
                 ),
                 'spiffy_routes_clear' => array(
                     'options' => array(
-                        'route'    => 'routes clear',
+                        'route'    => 'spiffyroutes clear',
                         'defaults' => array(
                             'controller' => 'SpiffyRoutes\Controller\CliController',
                             'action'     => 'clear'

@@ -84,8 +84,8 @@ class Module implements
             '  [options] command [arguments]',
             '',
             $console->colorize('Available Commands:', ColorInterface::YELLOW),
-            array($console->colorize('  routes build', ColorInterface::GREEN), 'build, or rebuild if present, the cache'),
-            array($console->colorize('  routes clear', ColorInterface::GREEN), 'clear the cache'),
+            array($console->colorize('  spiffyroutes build', ColorInterface::GREEN), 'build, or rebuild if present, the cache'),
+            array($console->colorize('  spiffyroutes clear', ColorInterface::GREEN), 'clear the cache'),
         );
     }
 }
