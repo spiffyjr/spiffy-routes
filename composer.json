@@ -4,11 +4,16 @@
     "homepage": "http://www.github.com/spiffyjr/spiffy-routes.git",
     "require": {
         "php": ">=5.3.3",
+        "doctrine/common": "2.*",
+        "zendframework/zend-cache": "2.*",
         "zendframework/zend-code": "2.*",
-        "zendframework/zend-mvc": "2.*"
+        "zendframework/zend-console": "2.*",
+        "zendframework/zend-mvc": "2.*",
+        "zendframework/zend-serializer": "2.*"
     },
     "require-dev": {
-        "phpunit/phpunit": "3.*"
+        "phpunit/phpunit": "3.*",
+        "spiffy/spiffy-test": "dev-master"
     },
     "autoload": {
         "psr-0": {
