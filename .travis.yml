@@ -7,7 +7,7 @@ php:
 before_install:
  - curl -s https://getcomposer.org/installer | php
  - php composer.phar install --prefer-source --dev --no-interaction
- - mkdir -p builds/logs
+ - mkdir -p build/logs
 
 script:
  - php vendor/bin/phpunit --bootstrap test/Bootstrap.php
