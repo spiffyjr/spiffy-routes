@@ -25,7 +25,16 @@ the dependencies specified in the `composer.json`.
 
 ## Supported Annotations
 
-Below is a list of currently supported annotations. This list will be updated as more annotations are supported.
+Below is a list of currently supported annotations. This list will be updated as more annotations are supported. In order
+to use the annotations you **must important them first**. Do this by putting the following at the top of your code,
+
+```php
+<?php
+
+use SpiffyRoutes\Annotation as Route;
+```
+
+This will let you use SpiffyRoute's annotations using `@Route` in your docblock.
 
 ### Root
 
