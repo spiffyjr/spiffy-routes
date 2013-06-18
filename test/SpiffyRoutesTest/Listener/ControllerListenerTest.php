@@ -4,15 +4,15 @@ namespace SpiffyRoutesTest\Listener;
 
 use ArrayObject;
 use SpiffyRoutes\Annotation\Root;
-use SpiffyRoutes\Listener\ControllerAnnotationsListener;
+use SpiffyRoutes\Listener\ControllerListener;
 use SpiffyTest\Framework\TestCase;
 use Zend\EventManager\Event;
 
-class ControllerAnnotationsListenerTest extends TestCase
+class ControllerListenerTest extends TestCase
 {
     public function testHandleRoot()
     {
-        $listener   = new ControllerAnnotationsListener();
+        $listener   = new ControllerListener();
         $annotation = new Root(array('value' => '/foo'));
         $spec       = new ArrayObject();
 

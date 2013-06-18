@@ -3,8 +3,9 @@
 namespace SpiffyRoutes;
 
 use ArrayObject;
-use SpiffyRoutes\Listener\ActionAnnotationsListener;
-use SpiffyRoutes\Listener\ControllerAnnotationsListener;
+use SpiffyRoutes\Listener\ActionListener;
+use SpiffyRoutes\Listener\ControllerListener;
+use SpiffyRoutes\Options\ModuleOptions;
 use Zend\Cache\Storage\Adapter\Memory as MemoryCache;
 use Zend\Cache\Storage\StorageInterface;
 use Zend\Code\Annotation\AnnotationCollection;
@@ -61,11 +62,26 @@ class RouteBuilder
     protected $routerConfig = array();
 
     /**
-     * @param ControllerManager $controllerManager
+     * @var ModuleOptions
      */
-    public function __construct(ControllerManager $controllerManager)
+    protected $options;
+
+    /**
+     * @param ControllerManager $controllerManager
+     * @param ModuleOptions $options
+     */
+    public function __construct(ControllerManager $controllerManager, ModuleOptions $options)
     {
         $this->controllerManager = $controllerManager;
+        $this->options           = $options;
+    }
+
+    /**
+     * @return \SpiffyRoutes\Options\ModuleOptions
+     */
+    public function getOptions()
+    {
+        return $this->options;
     }
 
     /**
@@ -114,8 +130,8 @@ class RouteBuilder
             __CLASS__,
             get_class($this),
         ));
-        $eventManager->attach(new ControllerAnnotationsListener());
-        $eventManager->attach(new ActionAnnotationsListener());
+        $eventManager->attach(new ControllerListener());
+        $eventManager->attach(new ActionListener());
         $this->eventManager = $eventManager;
         return $this;
     }
@@ -182,6 +198,10 @@ class RouteBuilder
 
             $controllerSpec         = new ArrayObject();
             $controllerSpec['name'] = $controllerName;
+
+            if ($this->checkForExcludeController($annotations, $controllerSpec)) {
+                continue;
+            }
 
             if ($annotations instanceof AnnotationCollection) {
                 $this->configureController($annotations, $controllerSpec);
@@ -287,7 +307,7 @@ class RouteBuilder
         ArrayObject $controllerSpec,
         ArrayObject $actionSpec
     ) {
-        if ($this->checkForExclude($annotation)) {
+        if ($this->checkForExcludeAction($annotation, $controllerSpec, $actionSpec)) {
             return;
         }
 
@@ -300,13 +320,33 @@ class RouteBuilder
     }
 
     /**
-     * @param $annotation
+     * @param $annotations
+     * @param $controllerSpec
      * @return bool
      */
-    protected function checkForExclude($annotation)
+    protected function checkForExcludeController($annotations, $controllerSpec)
     {
         $results = $this->getEventManager()->trigger(__FUNCTION__, $this, array(
-            'annotation' => $annotation,
+            'annotation'     => $annotations,
+            'controllerSpec' => $controllerSpec,
+        ), function ($r) {
+            return (true === $r);
+        });
+        return (bool) $results->last();
+    }
+
+    /**
+     * @param $annotation
+     * @param $controllerSpec
+     * @param $actionSpec
+     * @return bool
+     */
+    protected function checkForExcludeAction($annotation, $controllerSpec, $actionSpec)
+    {
+        $results = $this->getEventManager()->trigger(__FUNCTION__, $this, array(
+            'annotation'     => $annotation,
+            'controllerSpec' => $controllerSpec,
+            'actionSpec'     => $actionSpec
         ), function ($r) {
             return (true === $r);
         });

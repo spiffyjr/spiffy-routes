@@ -3,12 +3,13 @@
 namespace SpiffyRoutes\Listener;
 
 use SpiffyRoutes\Annotation\AbstractType;
+use SpiffyRoutes\Options\ModuleOptions;
 use Zend\EventManager\AbstractListenerAggregate;
 use Zend\EventManager\EventInterface;
 use Zend\EventManager\EventManagerInterface;
 use Zend\EventManager\ListenerAggregateInterface;
 
-class ActionAnnotationsListener extends AbstractListenerAggregate
+class ActionListener extends AbstractListenerAggregate
 {
     /**
      * @var array

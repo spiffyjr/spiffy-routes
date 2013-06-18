@@ -23,7 +23,7 @@ class RouteBuilderFactory implements FactoryInterface
 
         /** @var \Zend\Mvc\Controller\ControllerManager $loader */
         $loader  = $serviceLocator->get('ControllerLoader');
-        $service = new RouteBuilder($loader);
+        $service = new RouteBuilder($loader, $options);
 
         $adapter = $options->getCacheAdapter();
         if (is_string($adapter)) {

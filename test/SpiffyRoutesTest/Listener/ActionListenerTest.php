@@ -2,17 +2,17 @@
 
 namespace SpiffyRoutesTest\Listener;
 
-use SpiffyRoutes\Listener\ActionAnnotationsListener;
+use SpiffyRoutes\Listener\ActionListener;
 use Zend\EventManager\Event;
 
-class ActionAnnotationsListnerTest extends \PHPUnit_Framework_TestCase
+class ActionListenerTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @dataProvider providerEarlyReturns
      */
     public function testHandlesReturnEarlyWithNoAnnotation($method)
     {
-        $listener = new ActionAnnotationsListener();
+        $listener = new ActionListener();
         $event    = new Event();
 
         $listener->{$method}($event);
